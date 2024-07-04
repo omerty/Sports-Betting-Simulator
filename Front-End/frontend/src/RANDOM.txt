@@ -1,0 +1,615 @@
+
+//   return (
+//     <div className="HomeScreen">
+//       {/* Sidebar navigation */}
+//       <div className="nav" id="nav">
+//         <nav className="nav__content">
+//           <div className="nav__toggle" id="nav-toggle">
+//             <i className='bx bx-chevron-right'></i>
+//           </div>
+
+//           <a href="#" className="nav__logo">
+//             <i className='bx bxs-heart'></i>
+//             <span className="nav__logo-name">Sports</span>
+//           </a>
+
+//           <div className="nav__list">
+//             <a href="/Soccer" className={`nav__link ${activeLink === '/Soccer' ? 'active-link' : ''}`}>
+//               <i className='bx bx-football'></i>
+//               <span className="nav__name">Soccer</span>
+//             </a>
+
+//             <a href="/Football" className={`nav__link ${activeLink === '/Football' ? 'active-link' : ''}`}>
+//               <i className='bx bx-ball' ></i>
+//               <span className="nav__name">NFL</span>
+//             </a>
+
+//             <a href="/Hockey" className={`nav__link ${activeLink === '/Hockey' ? 'active-link' : ''}`}>
+//               <i className='bx bxs-circle'></i>
+//               <span className="nav__name">NHL</span>
+//             </a>
+
+//             <a href="/Cricket" className={`nav__link ${activeLink === '/Cricket' ? 'active-link' : ''}`}>
+//               <i className='bx bx-cricket-ball'></i>
+//               <span className="nav__name">Cricket</span>
+//             </a>
+
+//             <a href="#" className={`nav__link ${activeLink === '/Profile' ? 'active-link' : ''}`}>
+//               <i className='bx bx-cog'></i>
+//               <span className="nav__name">Profile</span>
+//             </a>
+//           </div>
+//         </nav>
+//       </div>
+
+//       {/* Main content */}
+//       <main className="container section">
+//         <div className="sports-section">
+//           <h1>Soccer</h1>
+//           {events.length === 0 ? (
+//             <p>No upcoming events</p>
+//           ) : (
+//             <div className="events-list">
+//               {events.map((event, index) => (
+//                 <div key={index} className="event-item" onClick={() => handleEventClick(event)}>
+//                   <p className="teams">
+//                     <span className="main-team">{event.home_team}</span>
+//                     <span className="vs">vs</span>
+//                     <span className="away-team">{event.away_team}</span>
+//                   </p>
+//                   <p className="commence-time">
+//                     {new Date(event.commence_time).toLocaleString()}
+//                   </p>
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+//         {/* Popup */}
+//         <div id="popup" className="popup">
+//           <div className="popup-content">
+//             <span className="close" onClick={closeModal}>&times;</span>
+//             {selectedEvent && (
+//               <div>
+//                 <h2>Event Details</h2>
+//                 <p><strong>Market:</strong> {selectedEvent.market}</p>
+//                 <p><strong>Away Team:</strong> {selectedEvent.away_team}</p>
+//                 <p><strong>Commence Time:</strong> {new Date(selectedEvent.commence_time).toLocaleString()}</p>
+                
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }
+
+// export default HockeyScreen;
+
+
+import React, { useEffect, useState } from 'react';
+import './HomeScreen.css';
+import 'boxicons/css/boxicons.min.css';
+import { setupNavigation } from './navBar';
+
+function HockeyScreen() {
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [activeLink, setActiveLink] = useState('/Soccer'); // Initialize active link state
+
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    document.getElementById('popup').style.display = 'block';
+  };
+
+  const closeModal = () => {
+    document.getElementById('popup').style.display = 'none';
+    setSelectedEvent(null);
+  };
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/Soccer')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Fetched events:', data);
+        if (Array.isArray(data)) {
+          setEvents(data);
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      })
+      .catch(error => console.error('Error fetching sports data:', error));
+  }, []);
+
+  useEffect(() => {
+    setupNavigation();
+    setActiveLink(window.location.pathname);
+  }, []);
+
+  return (
+    <div className="HomeScreen">
+      {/* Sidebar navigation */}
+      <div className="nav" id="nav">
+        <nav className="nav__content">
+          <div className="nav__toggle" id="nav-toggle">
+            <i className='bx bx-chevron-right'></i>
+          </div>
+
+          <a href="#" className="nav__logo">
+            <i className='bx bxs-heart'></i>
+            <span className="nav__logo-name">Sports</span>
+          </a>
+
+          <div className="nav__list">
+            <a href="/Soccer" className={`nav__link ${activeLink === '/Soccer' ? 'active-link' : ''}`}>
+              <i className='bx bx-football'></i>
+              <span className="nav__name">Soccer</span>
+            </a>
+
+            <a href="/Football" className={`nav__link ${activeLink === '/Football' ? 'active-link' : ''}`}>
+              <i className='bx bx-ball' ></i>
+              <span className="nav__name">NFL</span>
+            </a>
+
+            <a href="/Hockey" className={`nav__link ${activeLink === '/Hockey' ? 'active-link' : ''}`}>
+              <i className='bx bxs-circle'></i>
+              <span className="nav__name">NHL</span>
+            </a>
+
+            <a href="/Cricket" className={`nav__link ${activeLink === '/Cricket' ? 'active-link' : ''}`}>
+              <i className='bx bx-cricket-ball'></i>
+              <span className="nav__name">Cricket</span>
+            </a>
+
+            <a href="#" className={`nav__link ${activeLink === '/Profile' ? 'active-link' : ''}`}>
+              <i className='bx bx-cog'></i>
+              <span className="nav__name">Profile</span>
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      {/* Main content */}
+      <main className="container section">
+        <div className="sports-section">
+          <h1>Soccer</h1>
+          {events.length === 0 ? (
+            <p>No upcoming events</p>
+          ) : (
+            <div className="events-list">
+              {events.map((event, index) => (
+                <div key={index} className="event-item" onClick={() => handleEventClick(event)}>
+                  <p className="teams">
+                    <span className="main-team">{event.home_team}</span>
+                    <span className="vs">vs</span>
+                    <span className="away-team">{event.away_team}</span>
+                  </p>
+                  <p className="commence-time">
+                    {new Date(event.commence_time).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Popup */}
+          <div id="popup" className="popup">
+            <div className="popup-content">
+              <span className="close" onClick={closeModal}>&times;</span>
+              {selectedEvent && (
+                <div>
+                  <h2>Event Details</h2>
+                  <p><strong>Home Team:</strong> {selectedEvent.home_team}</p>
+                  <p><strong>Away Team:</strong> {selectedEvent.away_team}</p>
+                  <p><strong>Commence Time:</strong> {new Date(selectedEvent.commence_time).toLocaleString()}</p>
+                  {/* Render bookmakers and their odds here */}
+                  {selectedEvent.bookmakers.map((bookmaker, idx) => (
+                    <div key={idx}>
+                      <h3>{bookmaker.title}</h3>
+                      {bookmaker.markets.map((market, idx) => (
+                        <div key={idx}>
+                          <p><strong>Market:</strong> {market.key}</p>
+                          <p><strong>Last Update:</strong> {new Date(market.last_update).toLocaleString()}</p>
+                          <ul>
+                            {market.outcomes.map((outcome, idx) => (
+                              <li key={idx}>{outcome.name}: {outcome.price}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default HockeyScreen;
+
+
+
+
+
+
+
+
+// import React, { useState } from 'react';
+// import axios from 'axios';
+// import { useNavigate } from 'react-router-dom';
+// import { useAuth } from './Authentication';
+// import './styles.css';
+
+// function Welcome() {
+//   const [email, setEmail] = useState('');
+//   const [password, setPassword] = useState('');
+//   const [message, setMessage] = useState('');
+//   const navigate = useNavigate();
+//   const { login } = useAuth();
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const response = await axios.post('http://localhost:5000/login', {
+//         email,
+//         password,
+//       });
+//       login(response.data.token);
+//       setMessage(response.data.message);
+//       navigate('/Soccer');
+//     } catch (error) {
+//       if (error.response) {
+//         setMessage(error.response.data.error);
+//       } else {
+//         setMessage('An error occurred. Please try again.');
+//       }
+//     }
+//   };
+
+//   return (
+//     <div className="login">
+//       <img src="loginbkg.png" alt="login image" className="login__img" />
+
+//       <form className="login__form" onSubmit={handleSubmit}>
+//         <h1 className="login__title">Login</h1>
+
+//         <div className="login__content">
+//           <div className="login__box">
+//             <i className="ri-user-3-line login__icon"></i>
+
+//             <div className="login__box-input">
+//               <input
+//                 type="email"
+//                 required
+//                 className="login__input"
+//                 id="login-email"
+//                 placeholder=""
+//                 value={email}
+//                 onChange={(e) => setEmail(e.target.value)}
+//               />
+//               <label htmlFor="login-email" className="login__label">Email</label>
+//             </div>
+//           </div>
+
+//           <div className="login__box">
+//             <i className="ri-lock-2-line login__icon"></i>
+
+//             <div className="login__box-input">
+//               <input
+//                 type="password"
+//                 required
+//                 className="login__input"
+//                 id="login-pass"
+//                 placeholder=" "
+//                 value={password}
+//                 onChange={(e) => setPassword(e.target.value)}
+//               />
+//               <label htmlFor="login-pass" className="login__label">Password</label>
+//               <i className="ri-eye-off-line login__eye" id="login-eye"></i>
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="login__check">
+//           <div className="login__check-group">
+//             <input type="checkbox" className="login__check-input" id="login-check" />
+//             <label htmlFor="login-check" className="login__check-label">Remember me</label>
+//           </div>
+
+//           <a href="#" className="login__forgot">Forgot Password?</a>
+//         </div>
+
+//         <button type="submit" className="login__button">Login</button>
+
+//         <p className="login__register">
+//           Don't have an account? <a href="/register">Register</a>
+//         </p>
+
+//         {message && <p className="login__message">{message}</p>}
+//       </form>
+//     </div>
+//   );
+// }
+
+// export default Welcome;
+
+
+# from flask import Flask, request, jsonify, g
+# import mysql.connector
+# from mysql.connector import Error
+# import bcrypt
+# import re
+# import dns.resolver
+# import secrets
+# import socket
+# import smtplib
+# from flask_cors import CORS
+# import requests
+# import jwt
+# from datetime import datetime, timedelta
+
+# app = Flask(__name__)
+# app.config['SECRET_KEY'] = secrets.token_urlsafe(32)
+# CORS(app)
+
+# api_key = '72d1f71e309fbfa74778da71fee3a369'
+# database_config = {
+#     'host': 'localhost',
+#     'user': 'root',
+#     'password': 'root',
+#     'auth_plugin': 'mysql_native_password',
+#     'database': 'users'
+# }
+
+# sports_keys = {
+#     'Soccer': [
+#         "soccer_fifa_world_cup",
+#         "soccer_fifa_world_cup_womens",
+#         "soccer_fifa_world_cup_winner",
+#         "soccer_usa_mls"
+#     ],
+#     'Football': ["americanfootball_ncaaf", "americanfootball_nfl"],
+#     'Cricket': [
+#         "cricket_big_bash", "cricket_caribbean_premier_league", "cricket_icc_world_cup", "cricket_international_t20", "cricket_ipl", "cricket_odi",
+#         "cricket_psl", "cricket_t20_blast", "cricket_test_match"
+#     ],
+#     'Hockey': ["icehockey_nhl", "icehockey_nhl_championship_winner", "icehockey_sweden_hockey_league", "icehockey_sweden_allsvenskan"]
+# }
+
+# def valid_email(email):
+#     email_regex = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+#     return re.fullmatch(email_regex, email) is not None
+
+# def domain_validator(email):
+#     try:
+#         domain = email.split('@')[1]
+#         records = dns.resolver.resolve(domain, 'MX')
+#         mxRecord = records[0].exchange.to_text()
+
+#         host = socket.gethostname()
+#         server = smtplib.SMTP()
+#         server.set_debuglevel(0)
+#         server.connect(mxRecord)
+#         server.helo(host)
+#         server.mail('me@domain.com')
+#         code, message = server.rcpt(email)
+#         server.quit()
+
+#         return code == 250
+#     except:
+#         return False
+
+# def db_connection():
+#     return mysql.connector.connect(**database_config)
+
+# @app.before_request
+# def before_request():
+#     token = request.headers.get('Authorization')
+#     if token:
+#         try:
+#             token = token.split(" ")[1]  # Assuming the token is sent as "Bearer <token>"
+#             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+#             g.email = data['email']
+#         except Exception as e:
+#             g.email = None
+#     else:
+#         g.email = None
+
+# def token_required(f):
+#     def wrapper(*args, **kwargs):
+#         if g.email is None:
+#             return jsonify({'error': 'Token is missing or invalid'}), 403
+#         return f(*args, **kwargs)
+#     return wrapper
+
+# @app.route('/register', methods=['POST'])
+# def register():
+#     data = request.get_json()
+#     email = data['email']
+#     password = data['password']
+
+#     if not valid_email(email):
+#         return jsonify({'error': 'Invalid email format'}), 400
+
+#     if not domain_validator(email):
+#         return jsonify({'error': 'Invalid email domain'}), 400
+
+#     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+#     try:
+#         db = db_connection()
+#         cursor = db.cursor()
+#         cursor.execute("""
+#         CREATE TABLE IF NOT EXISTS users (
+#             email VARCHAR(255) UNIQUE NOT NULL,
+#             password VARCHAR(255) NOT NULL,
+#             bets JSON,
+#             coins INT NOT NULL DEFAULT 1000
+#         )
+#         """)
+        
+#         cursor.execute("""
+#         CREATE TABLE IF NOT EXISTS bets (
+#             id INT AUTO_INCREMENT PRIMARY KEY,
+#             user_id VARCHAR(255) NOT NULL,
+#             bet_details VARCHAR(255) NOT NULL,
+#             FOREIGN KEY (user_id) REFERENCES users(email)
+#         )
+#         """)
+        
+#         cursor.execute("SELECT email FROM users WHERE email = %s", (email,))
+#         if cursor.fetchone():
+#             return jsonify({'error': 'Email address already exists'}), 400
+
+#         # Insert a new user with empty bets array and 1000 coins
+#         cursor.execute("INSERT INTO users (email, password, bets) VALUES (%s, %s, %s)", (email, password_hash, '[]'))
+#         db.commit()
+#         return jsonify({'message': 'User registered successfully'}), 201
+#     except Error as e:
+#         return jsonify({'error': str(e)}), 500
+#     finally:
+#         if db.is_connected():
+#             cursor.close()
+#             db.close()
+
+# @app.route('/login', methods=['POST'])
+# def login():
+#     data = request.get_json()
+#     email = data['email']
+#     password = data['password']
+
+#     try:
+#         db = db_connection()
+#         cursor = db.cursor()
+#         cursor.execute("SELECT email, password FROM users WHERE email = %s", (email,))
+#         result = cursor.fetchone()
+#         if result and bcrypt.checkpw(password.encode('utf-8'), result[1].encode('utf-8')):
+#             token = generate_token(email)  # Generate token function
+#             return jsonify({'message': 'Login successful', 'token': token, 'email': email}), 200
+#         else:
+#             return jsonify({'error': 'Invalid email or password'}), 400
+
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
+
+#     finally:
+#         if 'db' in locals() and db.is_connected():
+#             cursor.close()
+#             db.close()
+
+# def generate_token(email):
+#     payload = {
+#         'email': email,
+#         'exp': datetime.utcnow() + timedelta(days=1)
+#     }
+#     token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+#     return token
+
+# def fetch_events(sport_key):
+#     url = f'https://api.the-odds-api.com/v4/sports/{sport_key}/events?apiKey={api_key}'
+#     response = requests.get(url)
+#     if response.status_code != 200:
+#         print(f"Error fetching events for {sport_key}: {response.status_code}")
+#         return None
+    
+#     events = []
+#     for event in response.json():
+#         try:
+#             newUrl = f'https://api.the-odds-api.com/v4/sports/{sport_key}/events/{event["id"]}/odds?apiKey={api_key}&regions=us&oddsFormat=american'
+#             newResponse = requests.get(newUrl)
+#             if newResponse.status_code != 200:
+#                 print(f"Error fetching odds for event {event['id']}: {newResponse.status_code}")
+#                 continue
+#             returned_data = newResponse.json()
+            
+#             event_odds = []
+#             for bookmaker in returned_data.get("bookmakers", []):
+#                 for market in bookmaker.get("markets", []):
+#                     if market.get("key") == "h2h": 
+#                         event_odds.extend(market.get("outcomes", []))
+            
+#             date_obj = datetime.strptime(event["commence_time"], "%Y-%m-%dT%H:%M:%SZ")
+#             events.append({
+#                 "home_team": event["home_team"],
+#                 "away_team": event['away_team'],
+#                 "commence_time": event["commence_time"],
+#                 "event_odds": event_odds
+#             })
+#         except KeyError as e:
+#             print(f"KeyError: {e} for event {event}")
+#         except Exception as e:
+#             print(f"Exception: {e} for event {event}")
+    
+#     return events
+
+# def get_events(sport):
+#     currentDate = datetime.now()
+#     maxDate = currentDate + timedelta(days=7)
+#     date_filter = lambda date_obj: currentDate <= date_obj <= maxDate
+
+#     events = []
+#     for sport_key in sports_keys[sport]:
+#         sport_events = fetch_events(sport_key)
+#         if sport_events is not None:
+#             filtered_events = [event for event in sport_events if date_filter(datetime.strptime(event["commence_time"], "%Y-%m-%dT%H:%M:%SZ"))]
+#             events.extend(filtered_events)
+#     return events
+
+# @app.route('/api/<sport>', methods=['GET'])
+# def get_sport_events(sport):
+#     if sport not in sports_keys:
+#         return jsonify({'error': 'Sport not supported'}), 400
+
+#     events = get_events(sport)
+#     if not events:
+#         return jsonify({'message': 'No events found'}), 404
+#     return jsonify(events), 200
+
+# @app.route('/placeBet', methods=['POST'])
+# @token_required
+# def save_bet():
+#     data = request.get_json()
+#     betAmount = data['betAmount']
+#     selectedBetOption = data['selectedBetOption']
+#     email = g.email
+#     print(email)
+    
+#     try:
+#         db = db_connection()
+#         cursor = db.cursor()
+        
+#         cursor.execute("SELECT coins FROM users WHERE email = %s", (email,))
+#         result = cursor.fetchone()
+        
+#         if not result:
+#             return jsonify({'error': 'User not found'}), 404
+        
+#         coins = result[0]
+#         if coins < betAmount:
+#             return jsonify({'error': 'Insufficient coins'}), 400
+        
+#         # Deduct bet amount from user's coins
+#         new_balance = coins - betAmount
+#         cursor.execute("UPDATE users SET coins = %s WHERE email = %s", (new_balance, email))
+        
+#         # Insert bet details into the bets table
+#         cursor.execute("INSERT INTO bets (user_id, bet_details) VALUES (%s, %s)", (email, selectedBetOption))
+        
+#         db.commit()
+#         return jsonify({'message': 'Bet placed successfully'}), 200
+    
+#     except Error as e:
+#         return jsonify({'error': str(e)}), 500
+    
+#     finally:
+#         if db.is_connected():
+#             cursor.close()
+#             db.close()
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
