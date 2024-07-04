@@ -6,6 +6,7 @@ import Register from './register';
 import SoccerScreen from './Main';
 import CricketScreen from "./Cricket"
 import HockeyScreen from "./Hockey"
+import SettingScreen from './Settings';
 import { AuthProvider } from './Authentication';
 import './styles.css';
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/FootBall" element={<FootBallScreen/>} />
         <Route path="/Cricket" element={<CricketScreen/>} />
         <Route path="/Hockey" element={<HockeyScreen/>} />
+        <Route path="/Setting" element={<SettingScreen/>} />
       </Routes>
     </AuthProvider>
   );

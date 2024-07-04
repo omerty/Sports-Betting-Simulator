@@ -28,6 +28,48 @@ body {
   padding: 10px;
 }
 
+.settings {
+  margin-left: 100px;
+  padding: 2rem;
+  width: 100%;
+}
+
+.settings__section {
+  margin-bottom: 2rem;
+}
+
+.settings__section h3 {
+  color: hsl(228, 12%, 15%);
+  margin-bottom: 1rem;
+}
+
+.settings__section p {
+  margin-bottom: .5rem;
+}
+
+.settings__section input {
+  width: 100%;
+  padding: .5rem;
+  margin-bottom: .5rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.settings__section button {
+  padding: .5rem 1rem;
+  background-color: hsl(228, 81%, 49%);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color .3s;
+}
+
+.settings__section button:hover {
+  background-color: hsl(228, 81%, 39%);
+}
+
+
 
 .events-list {
   display: flex;

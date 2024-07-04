@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { setupNavigation } from './navBar';
 
-function HockeyScreen() {
+function SoccerScreen() {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [activeLink, setActiveLink] = useState('/Soccer'); // Initialize active link state
@@ -13,11 +13,13 @@ function HockeyScreen() {
   const [betAmount, setBetAmount] = useState(''); // State for bet amount
   const [selectedBetOption, setSelectedBetOption] = useState(''); // State for selected bet option
   const [message, setMessage] = useState('');
+  const [userCoins, setUserCoins] = useState(0);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   
   const handleEventClick = (event) => {
     setSelectedEvent(event);
+    console.log('Selected Event ID:', event.event_id);
     document.getElementById('popup').style.display = 'block';
   };
 
@@ -25,7 +27,7 @@ function HockeyScreen() {
     try {
       // Example: Post bet data with authorization header
       const response = await axios.post('http://localhost:5000/placeBet', {
-        eventID: selectedEvent.id, // Include the event ID
+        eventID: selectedEvent.event_id, 
         betAmount,
         selectedBetOption
       }, {
@@ -99,6 +101,19 @@ function HockeyScreen() {
       }
     );
 
+    axios.get('http://localhost:5000/api/userCoins', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      console.log('Fetched user coins:', response.data);
+      setUserCoins(response.data.coins);
+    })
+    .catch(error => {
+      console.error('Error fetching user coins:', error);
+    });
+
     // Fetch events using Axios
     axios.get('http://localhost:5000/api/Soccer')
       .then(response => {
@@ -119,6 +134,7 @@ function HockeyScreen() {
     setupNavigation();
     setActiveLink(window.location.pathname);
   }, []);
+
 
   return (
     <div className="HomeScreen">
@@ -155,7 +171,7 @@ function HockeyScreen() {
               <span className="nav__name">Cricket</span>
             </a>
 
-            <a href="#" className={`nav__link ${activeLink === '/Profile' ? 'active-link' : ''}`}>
+            <a href="/Setting" className={`nav__link ${activeLink === '/Profile' ? 'active-link' : ''}`}>
               <i className='bx bx-cog'></i>
               <span className="nav__name">Profile</span>
             </a>
@@ -167,6 +183,7 @@ function HockeyScreen() {
       <main className="container section">
         <div className="sports-section">
           <h1>Soccer</h1>
+          <h2>Coins: {userCoins}</h2>
           {events.length === 0 ? (
             <p>No upcoming events</p>
           ) : (
@@ -243,4 +260,4 @@ function HockeyScreen() {
   );
 }
 
-export default HockeyScreen;
+export default SoccerScreen;

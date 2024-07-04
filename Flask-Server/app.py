@@ -17,7 +17,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_urlsafe(32)
 CORS(app)
 
-api_key = 'da3c8ebb3604ad55c7146a2e21cee9f4'
+api_key = '99b04c70c0ee331b79ce7128c9ed7be9'
 database_config = {
     'host': 'localhost',
     'user': 'root',
@@ -255,13 +255,61 @@ def get_sport_events(sport):
         return jsonify({'message': 'No events found'}), 404
     return jsonify(events), 200
 
+
+@app.route('/api/userCoins', methods=['GET'])
+def get_coins():
+    email = g.email
+    print("email ->", email)
+    try:
+        db = db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT coins FROM users WHERE email = %s", (email,))
+        result = cursor.fetchone()
+        if result is None:
+            return jsonify({"error": "User not found"}), 404
+        else:
+            return jsonify({"email": email, "coins": result[0]})
+        
+    except Exception as e:
+        print("HERE")
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if 'db' in locals() and db.is_connected():
+            cursor.close()
+            db.close()
+
+
+@app.route('/api/allBets', methods=['GET'])
+def get_bets():
+    email = g.email
+    try:
+        db = db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT bet_details, bet_amount FROM bets WHERE user_email = %s", (email,))
+        results = cursor.fetchall()
+        if results:
+            bets = [{"bet_details": result[0], "bet_amount": result[1]} for result in results]
+            return jsonify({"bets": bets}), 200
+        else:
+            return jsonify({"message": "No bets found"}), 404
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        if 'db' in locals() and db.is_connected():
+            cursor.close()
+            db.close()
+        
+
 @app.route('/placeBet', methods=['POST'])
 @token_required
 def save_bet():
     data = request.get_json()
     betAmount = data.get('betAmount')
     selectedBetOption = data.get('selectedBetOption')
-    eventId = 1234543234
+    eventId = data.get('eventID')
     email = g.email
     
     if not email or not betAmount or not selectedBetOption:
