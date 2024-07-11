@@ -112,7 +112,8 @@ function SettingScreen() {
             {events.bets.map((bet, index) => (
                 <li key={index}>
                 <span>Bet Amount: {bet.bet_amount}</span><br />
-                <span>Bet Details: {bet.bet_details}</span>
+                <span>Bet Details: {bet.bet_details}</span><br />
+                <span>Estimated Winnings: {bet.expected_winnings}</span>
               </li>
             ))}
             </ul>

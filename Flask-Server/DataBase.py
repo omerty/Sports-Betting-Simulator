@@ -48,11 +48,13 @@ try:
         CREATE TABLE IF NOT EXISTS bets (
             user_email VARCHAR(255) NOT NULL,
             game_id VARCHAR(255) NOT NULL,
+            sports_key VARCHAR(255) NOT NULL,
             bet_details VARCHAR(255) NOT NULL,
             bet_amount INT NOT NULL,
+            expected_winnings INT NOT NULL,
             FOREIGN KEY (user_email) REFERENCES users(email)
         )
-    """)
+        """)
     print("Table 'bets' created successfully.")
 
 except Error as e:

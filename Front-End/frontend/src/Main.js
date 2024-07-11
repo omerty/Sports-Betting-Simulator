@@ -10,35 +10,62 @@ function SoccerScreen() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [activeLink, setActiveLink] = useState('/Soccer'); // Initialize active link state
   const [selectedOdds, setSelectedOdds] = useState(null); // State for selected odds
+  const [selectedOddsPrice, setSelectedOddsPrice] = useState(null); // State for selected odds price
   const [betAmount, setBetAmount] = useState(''); // State for bet amount
   const [selectedBetOption, setSelectedBetOption] = useState(''); // State for selected bet option
   const [message, setMessage] = useState('');
   const [userCoins, setUserCoins] = useState(0);
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
   const token = localStorage.getItem('token');
-  
+  console.log(token)
   const handleEventClick = (event) => {
     setSelectedEvent(event);
     console.log('Selected Event ID:', event.event_id);
+    console.log('Sports Key:', event.sports_key);
     document.getElementById('popup').style.display = 'block';
   };
 
   const handleSubmit = async () => {
+    // Find the matching odds object based on selectedBetOption
+    const selectedOddsOption = selectedOdds.find(odds => odds.name === selectedBetOption);
+    const Price = selectedOddsOption.price;
+    console.log(selectedEvent.sports_key);
+
     try {
       // Example: Post bet data with authorization header
       const response = await axios.post('http://localhost:5000/placeBet', {
-        eventID: selectedEvent.event_id, 
         betAmount,
-        selectedBetOption
+        selectedBetOption,
+        eventID: selectedEvent.event_id, 
+        sportsKEY: selectedEvent.sports_key,
+        Price
+
       }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      console.log('Response:', response.data); // Log or use the response data
+      console.log('Response:', response.data);
+      setError('Bet successfully Placed')
+      window.location.reload(); // Log or use the response data
     } catch (error) {
+      if(error.response.status === 402)
+      {
+        setError('Insufficient coins, Please Top-Up Account!')
+      }else if(error.response.status === 402 || error.response.status === 415)
+      {
+        setError('Invalid bet amount format')
+      }else if(error.response.status === 409)
+        {
+          setError('User not found')
+        }
       console.error('Error placing bet:', error);
     }
+  };
+
+  const closePopup = () => {
+    setError(null);
   };
 
   const closeModal = () => {
@@ -216,7 +243,7 @@ function SoccerScreen() {
                       <div key={idx} style={{ position: 'relative' }}>
                         {(idx % 3 === 0) && <p>Event {Math.floor(idx / 3) + 1}</p>}
                         {(idx % 3 === 0) && <button className="ButtonBet" onClick={() => handleOddsClick(selectedEvent.event_odds.slice(idx, idx + 3))}>Place Bet on Event {Math.floor(idx / 3) + 1}</button>}
-                        <p><strong>{outcome.name}:</strong> {outcome.price}</p>
+                        <p><strong>{outcome.name}:</strong>{outcome.price}</p>
                       </div>
                     ))}
                   </div>
@@ -224,6 +251,16 @@ function SoccerScreen() {
               )}
             </div>
           </div>
+          {/* Error Popup */}
+          {error && (
+            <div className="error-popup">
+              <div className="error-popup-content">
+                <h2>Error</h2>
+                <p>{error}</p>
+                <button onClick={closePopup}>Close</button>
+              </div>
+            </div>
+          )}
           {/* Bet Popup */}
           <div id="bet-popup" className="popup">
             <div className="popup-content">

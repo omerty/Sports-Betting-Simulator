@@ -114,7 +114,7 @@ function HockeyScreen() {
     });
 
     // Fetch events using Axios
-    axios.get('http://localhost:5000/api/Cricket')
+    axios.get('http://localhost:5000/api/Hockey')
       .then(response => {
         console.log('Fetched events:', response.data);
         setEvents(response.data);

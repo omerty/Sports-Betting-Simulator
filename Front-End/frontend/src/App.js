@@ -14,6 +14,7 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
+        <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Welcome />} />
         <Route path="/register" element={<Register />} />
         <Route path="/Soccer" element={<SoccerScreen />} />

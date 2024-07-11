@@ -17,7 +17,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_urlsafe(32)
 CORS(app)
 
-api_key = '99b04c70c0ee331b79ce7128c9ed7be9'
+api_key = 'faa7a22b8ba3a8a2001858cb11be5b52'
 database_config = {
     'host': 'localhost',
     'user': 'root',
@@ -38,8 +38,50 @@ sports_keys = {
         "cricket_big_bash", "cricket_caribbean_premier_league", "cricket_icc_world_cup", "cricket_international_t20", "cricket_ipl", "cricket_odi",
         "cricket_psl", "cricket_t20_blast", "cricket_test_match"
     ],
-    'Hockey': ["icehockey_nhl", "icehockey_nhl_championship_winner", "icehockey_sweden_hockey_league", "icehockey_sweden_allsvenskan"]
+    'Basketball' : 
+    ["basketball_nba", "basketball_euroleague"],
+    'Hockey': ["icehockey_nhl"]
 }
+
+
+def update_winnings():
+    email = g.email
+    try:
+        db = db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT bet_details, bet_amount, expected_winnings,game_id,sports_key FROM bets WHERE user_email = %s", (email,))
+        results = cursor.fetchall()
+        if results:
+            bets_event_id = results[3]
+            sport_key = results[4]
+            
+            bets = [{"bet_details": result[0], "bet_amount": result[1], "expected_winnings": result[2], "event_id": results[3], "sports_key": results[4]} for result in results]
+            return jsonify({"bets": bets}), 200
+        else:
+            return jsonify({"message": "No bets found"}), 404
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        if 'db' in locals() and db.is_connected():
+            cursor.close()
+            db.close()
+
+
+def calc_winnings(stake, odds):
+    winnings = 0
+
+    if odds < 0:
+        odds = odds * -1
+        winnings = ((stake * 100) / odds) + stake
+        return winnings 
+
+    elif odds > 0:
+        winnings = ((stake * odds) / 100) + stake
+        return winnings
+
+
 
 def valid_email(email):
     email_regex = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
@@ -134,8 +176,10 @@ def register():
         CREATE TABLE IF NOT EXISTS bets (
             user_email VARCHAR(255) NOT NULL,
             game_id VARCHAR(255) NOT NULL,
+            sports_key VARCHAR(255) NOT NULL,
             bet_details VARCHAR(255) NOT NULL,
             bet_amount INT NOT NULL,
+            expected_winnings INT NOT NULL,
             FOREIGN KEY (user_email) REFERENCES users(email)
         )
         """)
@@ -172,13 +216,11 @@ def login():
         if result and bcrypt.checkpw(password.encode('utf-8'), result[1].encode('utf-8')):
             token = generate_token(email)  # Generate token function
             g.email = email
-            print("print -> ", email)
             return jsonify({'message': 'Login successful', 'token': token, 'email': email}), 200
         else:
             return jsonify({'error': 'Invalid email or password'}), 400
 
     except Exception as e:
-        print("HERE")
         return jsonify({'error': str(e)}), 500
 
     finally:
@@ -220,6 +262,7 @@ def fetch_events(sport_key):
             date_obj = datetime.strptime(event["commence_time"], "%Y-%m-%dT%H:%M:%SZ")
             events.append({
                 "event_id" : event["id"],
+                "sports_key" : event["sport_key"],
                 "home_team": event["home_team"],
                 "away_team": event['away_team'],
                 "commence_time": event["commence_time"],
@@ -286,10 +329,10 @@ def get_bets():
     try:
         db = db_connection()
         cursor = db.cursor()
-        cursor.execute("SELECT bet_details, bet_amount FROM bets WHERE user_email = %s", (email,))
+        cursor.execute("SELECT bet_details, bet_amount, expected_winnings FROM bets WHERE user_email = %s", (email,))
         results = cursor.fetchall()
         if results:
-            bets = [{"bet_details": result[0], "bet_amount": result[1]} for result in results]
+            bets = [{"bet_details": result[0], "bet_amount": result[1], "expected_winnings": result[2]} for result in results]
             return jsonify({"bets": bets}), 200
         else:
             return jsonify({"message": "No bets found"}), 404
@@ -310,37 +353,48 @@ def save_bet():
     betAmount = data.get('betAmount')
     selectedBetOption = data.get('selectedBetOption')
     eventId = data.get('eventID')
+    selectedOddsPrice = data.get('Price')
+    sports_key = data.get('sportsKEY')
     email = g.email
+
+    try:
+        selectedOddsPrice = float(selectedOddsPrice)
+        betAmount = float(betAmount)
+    except ValueError:
+        return jsonify({'error': 'Invalid odds format'}), 400
     
+    expected_winnings = calc_winnings(betAmount, selectedOddsPrice)
+    expected_winnings = int(expected_winnings)
+
     if not email or not betAmount or not selectedBetOption:
         return jsonify({'error': 'Email, bet amount, and selected bet option are required'}), 400
     
     try:
         betAmount = int(betAmount)
         if betAmount <= 0:
-            return jsonify({'error': 'Invalid bet amount'}), 400
+            return jsonify({'error': 'Invalid bet amount'}), 415
         
         db = db_connection()
         cursor = db.cursor()
         cursor.execute("SELECT coins FROM users WHERE email = %s", (email,))
         result = cursor.fetchone()
         if not result:
-            return jsonify({'error': 'User not found'}), 404
+            return jsonify({'error': 'User not found'}), 409
         coins = result[0]
         if coins < betAmount:
-            return jsonify({'error': 'Insufficient coins'}), 400
+            return jsonify({'message': 'Insufficient coins'}), 402
         
         # Deduct bet amount from user's coins
         new_balance = coins - betAmount
         cursor.execute("UPDATE users SET coins = %s WHERE email = %s", (new_balance, email))
         # Insert bet details into the bets table
         print(f"Attempting to insert bet with email: {email}, eventId: {eventId}, selectedBetOption: {selectedBetOption}, betAmount: {betAmount}")
-        cursor.execute("INSERT INTO bets (user_email, game_id, bet_details, bet_amount) VALUES (%s, %s, %s, %s)", (email,eventId,selectedBetOption,betAmount))
+        cursor.execute("INSERT INTO bets (user_email, game_id, sports_key, bet_details, bet_amount, expected_winnings) VALUES (%s,%s, %s, %s, %s, %s)", (email,eventId,sports_key,selectedBetOption,betAmount,expected_winnings))
         db.commit()
         return jsonify({'message': 'Bet placed successfully'}), 200
     
     except ValueError:
-        return jsonify({'error': 'Invalid bet amount format'}), 400
+        return jsonify({'error': 'Invalid bet amount format'}), 415
     except Error as e:
         return jsonify({'error': str(e)}), 500
     
